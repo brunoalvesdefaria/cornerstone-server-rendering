@@ -1,0 +1,3 @@
+[submodule "cornerstone"]
+	path = cornerstone
+	url = https://github.com/cornerstonejs/cornerstone.git

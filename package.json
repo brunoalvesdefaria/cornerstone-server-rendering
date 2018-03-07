@@ -1,0 +1,30 @@
+{
+  "name": "cornerstone-server-rendering",
+  "version": "1.0.0",
+  "description": "Server-side rendering with Cornerstone",
+  "main": "./src/main.js",
+  "scripts": {
+    "test": "npm run test",
+    "exec": "node ./src/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brunoalvesdefaria/cornerstone-server-rendering.git"
+  },
+  "keywords": [
+    "server",
+    "cornerstone",
+    "DICOM",
+    "imaging"
+  ],
+  "author": "Bruno Alves de Faria",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/brunoalvesdefaria/cornerstone-server-rendering/issues"
+  },
+  "homepage": "https://github.com/brunoalvesdefaria/cornerstone-server-rendering#readme",
+  "dependencies": {
+    "canvas": "^2.0.0-alpha.10",
+    "cornerstone-core": "file:cornerstone"
+  }
+}
