@@ -25,6 +25,9 @@
   "homepage": "https://github.com/brunoalvesdefaria/cornerstone-server-rendering#readme",
   "dependencies": {
     "canvas": "^2.0.0-alpha.10",
-    "cornerstone-core": "file:cornerstone"
+    "canvas-prebuilt": "^1.6.5-prerelease.1",
+    "cornerstone-core": "file:cornerstone",
+    "html-element": "^2.2.0",
+    "jsdom": "^11.6.2"
   }
 }
