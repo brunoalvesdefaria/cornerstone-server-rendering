@@ -5,7 +5,7 @@
   "main": "./src/main.js",
   "scripts": {
     "test": "npm run test",
-    "exec": "node ./src/main.js"
+    "exec": "phantomjs ./src/main.js"
   },
   "repository": {
     "type": "git",
@@ -24,10 +24,7 @@
   },
   "homepage": "https://github.com/brunoalvesdefaria/cornerstone-server-rendering#readme",
   "dependencies": {
-    "canvas": "^2.0.0-alpha.10",
-    "canvas-prebuilt": "^1.6.5-prerelease.1",
     "cornerstone-core": "file:cornerstone",
-    "html-element": "^2.2.0",
-    "jsdom": "^11.6.2"
+    "phantomjs-prebuilt": "^2.1.16"
   }
 }

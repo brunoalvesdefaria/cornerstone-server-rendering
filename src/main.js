@@ -1,37 +1,24 @@
-var jsdom = require('jsdom');
-var JSDOM = jsdom.JSDOM;
+const imageWidth = 32;
+const imageHeight = 32;
 
-// var htmlElement = require('html-element');
-// global.window = htmlElement.window;
-// global.document = htmlElement.document;
-global.window = (new JSDOM('', { pretendToBeVisual: true })).window;
-global.document = global.window.document;
-global.CustomEvent = window.CustomEvent;
-
-global.canvas = require('canvas-prebuilt');
-// var createCanvas = canvas.createCanvas;
-// var loadImage = canvas.loadImage;
-// var mainCanvas = createCanvas(512, 512);
-// global.document = {
-//   createElement: function (elementName) {
-//     return mainCanvas;
-//   },
-// };
-
-console.warn('>>>>INIT');
-var cornerstone = require('cornerstone-core');
-var containerElement = document.createElement('div');
-// var canvas = canvasLib.createCanvas(512, 512);
-// containerElement.appendChild(canvas);
-
+const cornerstone = require('cornerstone-core');
+const containerElement = document.createElement('div');
+containerElement.style.width = imageWidth + 'px';
+containerElement.style.height = imageHeight + 'px';
+document.body.appendChild(containerElement);
 cornerstone.enable(containerElement);
-var enabledElement = cornerstone.getEnabledElement(containerElement);
+const enabledElement = cornerstone.getEnabledElement(containerElement);
 
-var ctx = enabledElement.canvas.getContext('2d');
-console.warn('>>>>canvas', enabledElement.canvas);
-ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-ctx.beginPath();
-ctx.lineTo(50, 102);
-ctx.lineTo(100, 102);
-ctx.stroke();
-console.warn('<img src="' + enabledElement.canvas.toDataURL() + '" />');
+const context = enabledElement.canvas.getContext('2d');
+context.fillStyle = '#000000';
+context.fillRect(0, 0, imageWidth, imageHeight);
+context.strokeStyle = 'rgba(0, 255, 0, 0.75)';
+context.beginPath();
+context.lineTo(10, 25);
+context.lineTo(30, 25);
+context.stroke();
+
+const fs = require('fs');
+const dataUrl = enabledElement.canvas.toDataURL('image/jpeg', 1);
+const base64Data = dataUrl.replace(/^data:image\/(jpeg|png);base64,/, '');
+fs.write('test.jpg', atob(base64Data), 'b');
