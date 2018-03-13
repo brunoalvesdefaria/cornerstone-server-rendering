@@ -5,7 +5,7 @@
   "main": "./src/main.js",
   "scripts": {
     "test": "npm run test",
-    "exec": "phantomjs ./src/main.js"
+    "exec": "phantomjs --config=./phantomjsConfig.json ./src/main.js"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,8 @@
   "homepage": "https://github.com/brunoalvesdefaria/cornerstone-server-rendering#readme",
   "dependencies": {
     "cornerstone-core": "file:cornerstone",
+    "dicom-parser": "^1.7.6",
+    "es6-promise": "^4.2.4",
     "phantomjs-prebuilt": "^2.1.16"
   }
 }
