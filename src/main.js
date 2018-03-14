@@ -4,12 +4,14 @@ const imageWidth = 256;
 const imageHeight = 256;
 
 const cornerstone = require('cornerstone-core');
-const containerElement = document.createElement('div');
-containerElement.style.width = imageWidth + 'px';
-containerElement.style.height = imageHeight + 'px';
-document.body.appendChild(containerElement);
-cornerstone.enable(containerElement);
-const enabledElement = cornerstone.getEnabledElement(containerElement);
+const cornerstoneTools = require('cornerstone-tools');
+
+const element = document.createElement('div');
+element.style.width = imageWidth + 'px';
+element.style.height = imageHeight + 'px';
+document.body.appendChild(element);
+cornerstone.enable(element);
+const enabledElement = cornerstone.getEnabledElement(element);
 
 // Get the canvas context
 const context = enabledElement.canvas.getContext('2d');
@@ -24,21 +26,39 @@ const writeFile = function() {
 
 // Draw the tool data over the image
 const drawTools = function() {
-  // Draw the stroke
-  context.strokeStyle = 'rgba(0, 255, 0, 0.9)';
-  context.beginPath();
-  context.lineTo(10, 25);
-  context.lineTo(200, 50);
-  context.stroke();
+  const toolStates = require('./toolStates.js');
+
+  // Draw the Length tool
+  cornerstoneTools.length.enable(element);
+  cornerstoneTools.length.activate(element);
+  toolStates.lengthToolState.active = true;
+  cornerstoneTools.addToolState(element, 'length', toolStates.lengthToolState);
+
+  // Draw the Elliptical ROI tool
+  cornerstoneTools.ellipticalRoi.enable(element);
+  cornerstoneTools.ellipticalRoi.activate(element);
+  toolStates.ellipticalRoiToolState.active = true;
+  cornerstoneTools.addToolState(element, 'ellipticalRoi', toolStates.ellipticalRoiToolState);
+};
+
+// Define the image load callback
+const imageLoadCallback = function(image) {
+  element.removeEventListener('cornerstoneimagerendered', imageLoadCallback);
+
+  drawTools();
+
+  const writeFileHandler = function() {
+    element.removeEventListener('cornerstoneimagerendered', writeFileHandler);
+    writeFile();
+    console.log('=> Image successfully generated');
+  };
+
+  element.addEventListener('cornerstoneimagerendered', writeFileHandler);
 };
 
 // Load and draw the cornerstone image
 cornerstone.loadImage('idloader://1').then(function(image) {
-  cornerstone.displayImage(containerElement, image);
+  cornerstone.displayImage(element, image);
 
-  setTimeout(function() {
-    drawTools();
-    writeFile();
-    console.warn('>>>>DONE');
-  }, 1000);
+  element.addEventListener('cornerstoneimagerendered', imageLoadCallback);
 });

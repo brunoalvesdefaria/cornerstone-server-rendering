@@ -25,6 +25,8 @@
   "homepage": "https://github.com/brunoalvesdefaria/cornerstone-server-rendering#readme",
   "dependencies": {
     "cornerstone-core": "file:cornerstone",
+    "cornerstone-tools": "^2.1.0",
+    "cornerstone-wado-image-loader": "^2.0.0",
     "dicom-parser": "^1.7.6",
     "es6-promise": "^4.2.4",
     "phantomjs-prebuilt": "^2.1.16"
