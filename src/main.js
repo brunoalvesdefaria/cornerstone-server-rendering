@@ -1,14 +1,7 @@
-global.assert = require('assert');
-global.net = require('net');
-global.process = require('process');
-global.util = require('util');
-global.util.inherits = require('inherits');
-global.Worker = require('webworker').Worker;
-
 global.Promise = require('es6-promise');
 
-const imageWidth = 256;
-const imageHeight = 256;
+const imageWidth = 512;
+const imageHeight = 512;
 
 const cornerstone = require('cornerstone-core');
 const cornerstoneTools = require('cornerstone-tools');
@@ -17,7 +10,7 @@ const element = document.createElement('div');
 element.style.width = imageWidth + 'px';
 element.style.height = imageHeight + 'px';
 document.body.appendChild(element);
-cornerstone.enable(element);
+cornerstone.enable(element, { renderer: 'canvas' });
 const enabledElement = cornerstone.getEnabledElement(element);
 
 // Get the canvas context
@@ -25,84 +18,104 @@ const context = enabledElement.canvas.getContext('2d');
 
 // Write the image in the file system
 const writeFile = function() {
-  const fs = require('fs');
-  const dataUrl = enabledElement.canvas.toDataURL('image/jpeg', 1);
-  const base64Data = dataUrl.replace(/^data:image\/(jpeg|png);base64,/, '');
-  fs.write('test.jpg', atob(base64Data), 'b');
+    const fs = require('fs');
+    const dataUrl = enabledElement.canvas.toDataURL('image/jpeg', 1);
+    const base64Data = dataUrl.replace(/^data:image\/(jpeg|png);base64,/, '');
+    fs.write('test.jpg', atob(base64Data), 'b');
 };
 
 // Draw the tool data over the image
 const drawTools = function() {
-  const toolStates = require('./toolStates.js');
+    const toolStates = require('./toolStates.js');
 
-  // Draw the Length tool
-  cornerstoneTools.length.enable(element);
-  cornerstoneTools.length.activate(element);
-  toolStates.lengthToolState.active = true;
-  cornerstoneTools.addToolState(element, 'length', toolStates.lengthToolState);
+    // Draw the Length tool
+    cornerstoneTools.length.enable(element);
+    cornerstoneTools.length.activate(element);
+    toolStates.lengthToolState.active = true;
+    cornerstoneTools.addToolState(element, 'length', toolStates.lengthToolState);
 
-  // Draw the Elliptical ROI tool
-  cornerstoneTools.ellipticalRoi.enable(element);
-  cornerstoneTools.ellipticalRoi.activate(element);
-  toolStates.ellipticalRoiToolState.active = true;
-  cornerstoneTools.addToolState(element, 'ellipticalRoi', toolStates.ellipticalRoiToolState);
+    // Draw the Elliptical ROI tool
+    cornerstoneTools.ellipticalRoi.enable(element);
+    cornerstoneTools.ellipticalRoi.activate(element);
+    toolStates.ellipticalRoiToolState.active = true;
+    cornerstoneTools.addToolState(element, 'ellipticalRoi', toolStates.ellipticalRoiToolState);
 };
 
 // Define the image load callback
 const imageLoadCallback = function(image) {
-  element.removeEventListener('cornerstoneimagerendered', imageLoadCallback);
+    element.removeEventListener('cornerstoneimagerendered', imageLoadCallback);
 
-  drawTools();
+    drawTools();
 
-  const writeFileHandler = function() {
-    element.removeEventListener('cornerstoneimagerendered', writeFileHandler);
-    writeFile();
-    console.log('=> Image successfully generated');
-  };
+    const writeFileHandler = function() {
+      element.removeEventListener('cornerstoneimagerendered', writeFileHandler);
+        writeFile();
+        console.log('=> Image successfully generated');
+    };
 
-  element.addEventListener('cornerstoneimagerendered', writeFileHandler);
+    element.addEventListener('cornerstoneimagerendered', writeFileHandler);
 };
 
 // WADO Image Loader
 const cornerstoneWADOImageLoader = require('cornerstone-wado-image-loader');
 cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
-cornerstoneWADOImageLoader.webWorkerManager.initialize({
-  useWebWorkers: false,
-  webWorkerPath: './lib/cornerstoneWADOImageLoaderWebWorker.js',
-  taskConfiguration: {
-    decodeTask: {
-      codecsPath: './lib/cornerstoneWADOImageLoaderCodecs.js'
-    }
-  }
-});
 
 cornerstoneWADOImageLoader.configure({
-  beforeSend: function(xhr) {
-    console.warn('>>>>BEFORE_SEND');
-    xhr.setRequestHeader('Authorization', 'orthanc:orthanc');
-  }
+    beforeSend: function(xhr) {
+        xhr.setRequestHeader('Authorization', 'orthanc:orthanc');
+    }
 });
-//
-// // Load and draw the cornerstone image
-// console.warn('>>>>BEFORE');
-// cornerstone.loadImage('wadors:https://rawgit.com/cornerstonejs/cornerstoneWADOImageLoader/master/testImages/wadors/CTImageEvenAligned.dat').then(function(image) {
-//   console.warn('>>>>AAA');
-//   cornerstone.displayImage(element, image);
-//
-//   element.addEventListener('cornerstoneimagerendered', imageLoadCallback);
-// });
+
+cornerstoneWADOImageLoader.webWorkerManager.initialize({
+    taskConfiguration: {
+        decodeTask: {
+            useWebWorkers: false,
+            codecsPath: './lib/cornerstoneWADOImageLoaderCodecs.js'
+        }
+    }
+});
 
 function loadAndViewImage(imageId) {
-    console.warn('>>>>loadImage', imageId);
-    const promise = cornerstone.loadImage(imageId).then(function(image) {
-        console.log(image);
+    cornerstone.loadImage(imageId).then(function(image) {
+        const printR = function(obj, padding) {
+            padding = padding || '';
+            const currentPadding = padding + '  ';
+
+            if (!padding) {
+                console.log('{');
+            }
+
+            Object.keys(obj).forEach(function(key) {
+                const item = obj[key];
+                if (typeof item === 'object') {
+                    console.log(currentPadding + key + ': {');
+                    printR(item, currentPadding);
+                } else {
+                    console.log(currentPadding + key + ': ' + item);
+                }
+            });
+            console.log(padding + '}');
+
+            if (!padding) {
+                console.log('\n');
+            }
+        };
+
+        console.warn('>>>>Image');
+        printR(image);
+
+        // console.warn('>>>>PIXEL_DATA');
+        // printR(image.getPixelData());
+
         const viewport = cornerstone.getDefaultViewportForImage(element, image);
+        console.warn('>>>>Viewport');
+        printR(viewport);
+
         cornerstone.displayImage(element, image, viewport);
-        imageLoadCallback();
+        element.addEventListener('cornerstoneimagerendered', imageLoadCallback);
     }, function(error) {
         console.error(error);
     });
-    console.warn('>>>>isPromise', promise instanceof Promise);
 }
 
 function getImageFrameURI(metadataURI, metadata) {
@@ -128,7 +141,7 @@ function downloadAndView() {
             const metadata = data[0];
             // const imageFrameURI = getImageFrameURI(metadataURI, metadata);
             const imageFrameURI = 'https://rawgit.com/cornerstonejs/cornerstoneWADOImageLoader/master/testImages/wadors/CTImageEvenAligned.dat';
-            const imageId = 'wadors:' + imageFrameURI
+            const imageId = 'wadors:' + imageFrameURI;
 
             cornerstoneWADOImageLoader.wadors.metaDataManager.add(imageId, metadata);
 
@@ -143,7 +156,3 @@ function downloadAndView() {
 }
 
 downloadAndView();
-
-// https://github.com/cornerstonejs/cornerstoneWADOImageLoader/blob/1498ba391d690794d37da83e135b93ac4350fd33/src/imageLoader/decodeImageFrame.js#L3
-// https://github.com/cornerstonejs/cornerstoneWADOImageLoader/blob/eab9926e6120afeb0a7092a77aced7187cd05aba/src/imageLoader/webWorkerManager.js#L235
-// https://github.com/cornerstonejs/cornerstoneWADOImageLoader/blob/eab9926e6120afeb0a7092a77aced7187cd05aba/src/imageLoader/webWorkerManager.js#L71
