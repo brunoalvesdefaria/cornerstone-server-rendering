@@ -3,4 +3,4 @@
 	url = https://github.com/cornerstonejs/cornerstone.git
 [submodule "cornerstoneWADOImageLoader"]
 	path = cornerstoneWADOImageLoader
-	url = https://github.com/cornerstonejs/cornerstoneWADOImageLoader.git
+	url = https://github.com/brunoalvesdefaria/cornerstoneWADOImageLoader.git
