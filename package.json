@@ -5,7 +5,8 @@
   "main": "./src/main.js",
   "scripts": {
     "test": "npm run test",
-    "exec": "phantomjs --config=./phantomjsConfig.json ./src/main.js"
+    "wadors": "phantomjs --config=./phantomjsConfig.json ./src/wadoRs.js",
+    "imageid": "phantomjs --config=./phantomjsConfig.json ./src/imageId.js"
   },
   "repository": {
     "type": "git",
@@ -24,7 +25,7 @@
   },
   "homepage": "https://github.com/brunoalvesdefaria/cornerstone-server-rendering#readme",
   "dependencies": {
-    "cornerstone-core": "file:cornerstone",
+    "cornerstone-core": "^2.1.0",
     "cornerstone-tools": "^2.1.0",
     "cornerstone-wado-image-loader": "file:cornerstoneWADOImageLoader",
     "dicom-parser": "^1.7.6",

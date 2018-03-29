@@ -30,6 +30,30 @@ function getImage(imageId) {
 
   function getPixelData () {
     if(imageId === 'idloader://1') {
+        const printR = function(obj, padding) {
+            padding = padding || '';
+            const currentPadding = padding + '  ';
+
+            if (!padding) {
+                console.log('{');
+            }
+
+            Object.keys(obj).forEach(function(key) {
+                const item = obj[key];
+                if (typeof item === 'object') {
+                    console.log(currentPadding + key + ': {');
+                    printR(item, currentPadding);
+                } else {
+                    console.log(currentPadding + key + ': ' + item);
+                }
+            });
+            console.log(padding + '}');
+
+            if (!padding) {
+                console.log('\n');
+            }
+        };
+        printR(imagePixelData);
         return imagePixelData;
     }
 
