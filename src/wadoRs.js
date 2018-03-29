@@ -130,8 +130,30 @@ function getImageFrameURI(metadataURI, metadata) {
 }
 
 function downloadAndView() {
-    const imageId = 'wadouri:rawgit.com/chafey/byozfwv/master/sampleData/1.2.840.113619.2.5.1762583153.215519.978957063.80.dcm';
-    loadAndViewImage(imageId);
+    const url = 'https://raw.githubusercontent.com/cornerstonejs/cornerstoneWADOImageLoader/master/testImages/wadors';
+    const metadataURI = url + '/metadata';
+
+    const xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            // Make sure it's a JSON document
+            data = JSON.parse(this.responseText);
+
+            const metadata = data[0];
+            // const imageFrameURI = getImageFrameURI(metadataURI, metadata);
+            const imageFrameURI = 'https://rawgit.com/cornerstonejs/cornerstoneWADOImageLoader/master/testImages/wadors/CTImageEvenAligned.dat';
+            const imageId = 'wadors:' + imageFrameURI;
+
+            cornerstoneWADOImageLoader.wadors.metaDataManager.add(imageId, metadata);
+
+            // image enable the dicomImage element and activate a few tools
+            loadAndViewImage(imageId);
+        }
+    };
+
+    xhr.open('GET', metadataURI, true);
+    xhr.setRequestHeader('Accept', 'application/json');
+    xhr.send();
 }
 
 downloadAndView();
