@@ -49,7 +49,7 @@ const imageLoadCallback = function(image) {
     drawTools();
 
     const writeFileHandler = function() {
-      element.removeEventListener('cornerstoneimagerendered', writeFileHandler);
+        // element.removeEventListener('cornerstoneimagerendered', writeFileHandler);
         writeFile();
         console.log('=> Image successfully generated');
     };
@@ -106,13 +106,13 @@ function loadAndViewImage(imageId) {
         printR(image);
 
         console.warn('>>>>PIXEL_DATA');
-        printR(image.getPixelData());
+        // printR(image.getPixelData());
 
-        const viewport = cornerstone.getDefaultViewportForImage(element, image);
-        console.warn('>>>>Viewport');
-        printR(viewport);
+        // const viewport = cornerstone.getDefaultViewportForImage(element, image);
+        // console.warn('>>>>Viewport');
+        // printR(viewport);
 
-        cornerstone.displayImage(element, image, viewport);
+        cornerstone.displayImage(element, image/*, viewport*/);
         element.addEventListener('cornerstoneimagerendered', imageLoadCallback);
     }, function(error) {
         console.error(error);

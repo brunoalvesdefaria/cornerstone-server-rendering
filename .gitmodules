@@ -1,6 +1,3 @@
-[submodule "cornerstone"]
-	path = cornerstone
-	url = https://github.com/cornerstonejs/cornerstone.git
 [submodule "cornerstoneWADOImageLoader"]
 	path = cornerstoneWADOImageLoader
 	url = https://github.com/brunoalvesdefaria/cornerstoneWADOImageLoader.git
