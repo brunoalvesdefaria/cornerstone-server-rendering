@@ -1,3 +1,51 @@
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+const { window } = new JSDOM(`...`);
+const { document } = (new JSDOM(`...`)).window;
+
+Object.defineProperties(window.HTMLElement.prototype, {
+  offsetLeft: {
+    get: function() { return parseFloat(window.getComputedStyle(this).marginLeft) || 0; }
+  },
+  offsetTop: {
+    get: function() { return parseFloat(window.getComputedStyle(this).marginTop) || 0; }
+  },
+  offsetHeight: {
+    get: function() { return parseFloat(window.getComputedStyle(this).height) || 0; }
+  },
+  offsetWidth: {
+    get: function() { return parseFloat(window.getComputedStyle(this).width) || 0; }
+  },
+  clientHeight: {
+    get: function() { return 512 }
+  },
+  clientWidth: {
+    get: function() { return 512 }
+  }
+});
+
+global.XMLHttpRequest = require('xhr2');
+global.window = window;
+global.document = document;
+global.Worker = require('webworker-threads').Worker;
+
+require('./imageIdLoader.js');
+
+global.performance = require('perf_hooks').performance;
+
+require('custom-event-polyfill');
+
+window.requestAnimationFrame = function requestFrame (callback) {
+  return window.setTimeout(callback, 1000 / 60);
+}
+
+global.window = window;
+global.CustomEvent = window.CustomEvent;
+global.requestAnimationFrame = window.requestAnimationFrame;
+global.navigator = {
+    hardwareConcurrency: 1
+};
+
 global.Promise = require('es6-promise');
 
 const imageWidth = 512;
@@ -5,6 +53,8 @@ const imageHeight = 512;
 
 const cornerstone = require('cornerstone-core');
 const cornerstoneTools = require('cornerstone-tools');
+
+cornerstoneTools.external.cornerstone = cornerstone;
 
 const element = document.createElement('div');
 element.style.width = imageWidth + 'px';
@@ -17,12 +67,16 @@ const enabledElement = cornerstone.getEnabledElement(element);
 const context = enabledElement.canvas.getContext('2d');
 
 // Write the image in the file system
-const writeFile = function() {
+const writeFile = function(enabledElement, callback) {
     const fs = require('fs');
-    const dataUrl = enabledElement.canvas.toDataURL('image/jpeg', 1);
+    //console.log(enabledElement);
+    const dataUrl = enabledElement.canvas.toDataURL('image/png', 1);
+    console.warn('dataUrl!');
+    //console.warn(dataUrl);
     const base64Data = dataUrl.replace(/^data:image\/(jpeg|png);base64,/, '');
-    console.warn('>>>>BASE64', base64Data);
-    fs.write('test.jpg', atob(base64Data), 'b');
+    //console.log(base64Data);
+    const buf = new Buffer(base64Data, 'base64');
+    fs.writeFile('./test.jpg', buf, callback);
 };
 
 // Draw the tool data over the image
@@ -48,10 +102,15 @@ const imageLoadCallback = function(image) {
 
     drawTools();
 
-    const writeFileHandler = function() {
-        // element.removeEventListener('cornerstoneimagerendered', writeFileHandler);
-        writeFile();
-        console.log('=> Image successfully generated');
+    const writeFileHandler = function(event) {
+        const eventData = event.detail;
+        const enabledElement = eventData.enabledElement;
+
+        console.log('writeFileHandler');
+        element.removeEventListener('cornerstoneimagerendered', writeFileHandler);
+        writeFile(enabledElement, function() {
+            console.log('=> Image successfully generated');
+        });
     };
 
     element.addEventListener('cornerstoneimagerendered', writeFileHandler);
@@ -60,12 +119,6 @@ const imageLoadCallback = function(image) {
 // WADO Image Loader
 const cornerstoneWADOImageLoader = require('cornerstone-wado-image-loader');
 cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
-
-cornerstoneWADOImageLoader.configure({
-    beforeSend: function(xhr) {
-        xhr.setRequestHeader('Authorization', 'orthanc:orthanc');
-    }
-});
 
 cornerstoneWADOImageLoader.webWorkerManager.initialize({
     taskConfiguration: {
@@ -77,7 +130,10 @@ cornerstoneWADOImageLoader.webWorkerManager.initialize({
 });
 
 function loadAndViewImage(imageId) {
+    console.log(imageId)
     cornerstone.loadImage(imageId).then(function(image) {
+        console.log('done downloading');
+
         const printR = function(obj, padding) {
             padding = padding || '';
             const currentPadding = padding + '  ';
@@ -103,10 +159,11 @@ function loadAndViewImage(imageId) {
         };
 
         console.warn('>>>>Image');
-        printR(image);
+        //printR(image);
 
         console.warn('>>>>PIXEL_DATA');
-        // printR(image.getPixelData());
+        const pixelData = image.getPixelData();
+        console.log(pixelData.length);
 
         // const viewport = cornerstone.getDefaultViewportForImage(element, image);
         // console.warn('>>>>Viewport');
@@ -115,45 +172,13 @@ function loadAndViewImage(imageId) {
         cornerstone.displayImage(element, image/*, viewport*/);
         element.addEventListener('cornerstoneimagerendered', imageLoadCallback);
     }, function(error) {
+        throw new Error(error);
         console.error(error);
     });
 }
 
-function getImageFrameURI(metadataURI, metadata) {
-    // Use the BulkDataURI if present int the metadata
-    if(metadata['7FE00010'] && metadata['7FE00010'].BulkDataURI) {
-        return metadata['7FE00010'].BulkDataURI;
-    }
+const imageId = 'dicomweb:http://rawgit.com/chafey/byozfwv/master/sampleData/1.2.840.113619.2.5.1762583153.215519.978957063.80.dcm';
+//const imageId = 'dicomweb:http://localhost:8000/image.dcm';
+//const imageId = 'idloader://1'
 
-    // fall back to using frame #1
-    return metadataURI + '/frames/1';
-}
-
-function downloadAndView() {
-    const url = 'https://raw.githubusercontent.com/cornerstonejs/cornerstoneWADOImageLoader/master/testImages/wadors';
-    const metadataURI = url + '/metadata';
-
-    const xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            // Make sure it's a JSON document
-            data = JSON.parse(this.responseText);
-
-            const metadata = data[0];
-            // const imageFrameURI = getImageFrameURI(metadataURI, metadata);
-            const imageFrameURI = 'https://rawgit.com/cornerstonejs/cornerstoneWADOImageLoader/master/testImages/wadors/CTImageEvenAligned.dat';
-            const imageId = 'wadors:' + imageFrameURI;
-
-            cornerstoneWADOImageLoader.wadors.metaDataManager.add(imageId, metadata);
-
-            // image enable the dicomImage element and activate a few tools
-            loadAndViewImage(imageId);
-        }
-    };
-
-    xhr.open('GET', metadataURI, true);
-    xhr.setRequestHeader('Accept', 'application/json');
-    xhr.send();
-}
-
-downloadAndView();
+loadAndViewImage(imageId);

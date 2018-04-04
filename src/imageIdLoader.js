@@ -53,7 +53,6 @@ function getImage(imageId) {
                 console.log('\n');
             }
         };
-        printR(imagePixelData);
         return imagePixelData;
     }
 

@@ -58,12 +58,11 @@ const imageLoadCallback = function(image) {
 };
 
 // Load and draw the cornerstone image
-cornerstone.loadImage('idloader://1').then(function(image) {
+/*cornerstone.loadImage('idloader://1').then(function(image) {
     const viewport = cornerstone.getDefaultViewportForImage(element, image);
 
-    console.warn('>>>>VIEWPORT', viewport);
 
     cornerstone.displayImage(element, image, viewport);
 
     element.addEventListener('cornerstoneimagerendered', imageLoadCallback);
-});
+});*/
